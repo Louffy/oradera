@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/driverdata/driverdata.iml" filepath="$PROJECT_DIR$/driverdata/driverdata.iml" />
+      <module fileurl="file://$PROJECT_DIR$/driverquery/driverquery.iml" filepath="$PROJECT_DIR$/driverquery/driverquery.iml" />
+      <module fileurl="file://$PROJECT_DIR$/driverweb/driverweb.iml" filepath="$PROJECT_DIR$/driverweb/driverweb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/orderanalysis.iml" filepath="$PROJECT_DIR$/orderanalysis.iml" />
+    </modules>
+  </component>
+</project>

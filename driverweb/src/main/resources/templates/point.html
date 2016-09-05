@@ -1,0 +1,212 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width"/>
+    <title>点标记</title>
+    <link rel="stylesheet" th:href="@{/css/main1119.css}"/>
+    <style>
+        .marker {
+            color: #ff6600;
+            padding: 4px 10px;
+            border: 1px solid #fff;
+            white-space: nowrap;
+            font-size: 12px;
+            font-family: "";
+            background-color: #0066ff;
+
+
+        }
+    </style>
+    <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&amp;key=c08bfba73a82fd724b333351722897b0&amp;&amp;plugin=AMap.Scale,AMap.OverView,AMap.ToolBar"></script>
+    <script type="text/javascript" src="http://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript" th:src="@{/scripts/jquery-3.1.0.min.js}"></script>
+</head>
+<body>
+<h2 id="c" th:text="${orderno}" ></h2>
+<div id="d">
+    <p></p>
+</div>
+<div id="container">
+
+</div>
+<div  class="button-group">
+
+</div>
+<script>
+
+    var order = document.getElementById("c").innerHTML;
+    console.log(order);
+    $.ajax({
+        url: "/invalidorder/"+order
+    }).then(function(data) {
+        var lat = data.lat;
+        console.log(lat)
+        console.log(typeof lat)
+        var lon = data.lon;
+        var driverlist = data.driverPosSatArray;
+        var driversnapshot = data.driverSnapshotArray;
+        var statusmap = data.driverDistanceStatusMap;
+        var completestatus = data.completeDriver;
+        var completestatus2 = data.completeDriver2;
+        var completestatus3 = data.completeDriver3;
+        var statuscount = data.statusCount;
+        console.log(completestatus);
+        $("#d").append(`<p>Time:${data.time}</p>`);
+        $("#d").append(`<p>All Drivers:${driverlist.length}</p>`);
+        $("#d").append(`<p>Drivers Status:</p>`);
+        for(var key in statuscount){
+            $("#d").append(`<li>    ${key}:${statuscount[key]}</li>`);
+        }
+        $("#d").append(`<h5>StatusMap:</h5>`);
+        $("#d").append(`<p>5000:</p>`);
+        for(var key in statusmap[0]){
+            $("#d").append(`<li>    ${key}:${statusmap[0][key].length}</li>`);
+        }
+        $("#d").append(`<p>10000:</p>`);
+        for(var key in statusmap[1]){
+            $("#d").append(`<li>    ${key}:${statusmap[1][key].length}</li>`);
+        }
+        $("#d").append(`<p>Further:</p>`);
+        for(var key in statusmap[2]){
+            $("#d").append(`<li>    ${key}:${statusmap[2][key].length}</li>`);
+        }
+        $("#d").append(`<p>${completestatus.length}</p>`);
+        $("#d").append(`<p>${completestatus2.length}</p>`);
+        $("#d").append(`<p>${completestatus3.length}</p>`);
+
+        var scale = new AMap.Scale({
+                    visible: true
+                }),
+                toolBar = new AMap.ToolBar({
+                    visible: true
+                }),
+                overView = new AMap.OverView({
+                    visible: true
+                });
+        var marker, map = new AMap.Map("container", {
+            resizeEnable: true,
+            center: [lon,lat],
+            zoom: 13
+        });
+        map.addControl(scale);
+        map.addControl(toolBar);
+        map.addControl(overView);
+
+        var icons = ['../../images/r.png',
+            '../../images/b.png',
+            '../../images/w.png',
+            '../../images/cancel.png',
+            '../../images/rest.png',
+            '../../images/r.png',
+        '../../images/black.png'];
+
+        var iconslist = new Array(7);
+        //<![CDATA[
+        for(i = 0;i<iconslist.length;i++){
+            var size = 15;
+            if(i==6)
+                size = 30;
+            iconslist[i]  = new AMap.Icon({
+                image : icons[i],
+                size : new AMap.Size(size,size)
+            });
+        }
+        //]]>
+
+        var circle1 = new AMap.Circle({
+            center: new AMap.LngLat(lon, lat),// 圆心位置
+            radius: 5000, //半径
+            strokeColor: "#ffdc1c", //线颜色
+            strokeOpacity: 1, //线透明度
+            strokeWeight: 3, //线粗细度
+            fillColor: "#eecb16", //填充颜色
+            fillOpacity: 0.25//填充透明度
+        });
+        var circle2 = new AMap.Circle({
+            center: new AMap.LngLat(lon, lat),// 圆心位置
+            radius: 10000, //半径
+            strokeColor: "#ffdc1c", //线颜色
+            strokeOpacity: 1, //线透明度
+            strokeWeight: 3, //线粗细度
+            fillColor: "#eecb16", //填充颜色
+            fillOpacity: 0.25//填充透明度
+        });
+        addMarker(map,iconslist,lon,lat,driversnapshot);
+        circle1.setMap(map);
+        circle2.setMap(map);
+    });
+
+
+    //map.setZoomAndCenter(15, [l, t]);
+
+
+
+    // 实例化点标记
+    function addMarker(map,iconslist,lon,lat,driversnapshot) {
+        marker = new AMap.Marker({
+            map:map,
+            icon: iconslist[iconslist.length-1],
+            position: [lon,lat]
+        });
+        driversnapshot.forEach(function(m){
+            var status = m.driverStatus;
+            var position = m.driverPosition;
+            markerc = new AMap.Marker({
+                map:map,
+                icon: iconslist[Number(status.availiable)],
+                position: [Number(position.pd_lon),Number(position.pd_lat)]
+            });
+            var actions = status.actionArray;
+            var s1 = "NULL";
+            var s2 = "NULL";
+            if(actions.length == 2){
+                if(actions[0]!==null)
+                    if(actions[0].pd_oper_type !== null)
+                        s1 =  actions[0].pd_oper_type;
+                if(actions[1]!==null)
+                    if(actions[1].pd_oper_type !== null)
+                        s2 =  actions[1].pd_oper_type;
+            }
+            else if(actions.length == 1) {
+                if(actions[0]!==null)
+                        if(actions[0].pd_oper_type !== null)
+                            s1 =  actions[0].pd_oper_type;
+                s2 = "";
+
+            }
+            markerc.setTitle(m.driverId+ ":" + s1 + "-->" + s2);
+        //markerc.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+       //     offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+       //     content: m.driverId
+      //  });
+        })
+    }
+
+    function updateMarker() {
+        // 自定义点标记内容
+        var markerContent = document.createElement("div");
+
+        // 点标记中的图标
+        var markerImg = document.createElement("img");
+        markerImg.className = "markerlnglat";
+        markerImg.src = "http://webapi.amap.com/theme/v1.3/markers/n/mark_r.png";
+        markerContent.appendChild(markerImg);
+
+        // 点标记中的文本
+        var markerSpan = document.createElement("span");
+        markerSpan.className = 'marker';
+        markerSpan.innerHTML = "Hi，我换新装备啦！";
+        markerContent.appendChild(markerSpan);
+
+        marker.setContent(markerContent); //更新点标记内容
+        marker.setPosition([116.391467, 39.927761]); //更新点标记位置
+    }
+
+
+
+
+</script>
+</body>
+</html>
