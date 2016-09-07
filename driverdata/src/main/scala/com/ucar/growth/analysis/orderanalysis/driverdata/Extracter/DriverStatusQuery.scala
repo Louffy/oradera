@@ -163,7 +163,7 @@ object DriverStatusQuery extends Serializable{
 
 
 
-    //val jsonArray = Util.ObjectToJson(resultArray)
+    //val jsonArray = JavaUtil.ObjectToJson(resultArray)
    // val rdd = sparkSpression.sparkContext.parallelize(jsonArray)
 
 

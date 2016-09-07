@@ -4,6 +4,7 @@ import java.sql.{Date, Timestamp}
 import java.text.SimpleDateFormat
 import java.util.ArrayList
 
+import co.theasi.plotly.{writer, Plot, draw}
 import com.google.gson.Gson
 import com.ucar.growth.analysis.orderanalysis.driverdata.Beans.{DriverStatus, DriverAction}
 import com.ucar.growth.analysis.orderanalysis.driverdata.Extracter.{SourceFile, DataExtracter}
@@ -13,6 +14,9 @@ import org.apache.spark.sql.DataFrame
 import org.joda.time.DateTime
 
 import scala.collection.mutable
+import co.theasi.plotly
+import util.Random
+
 
 /**
   * Created by zfx on 2016/8/4.
@@ -103,23 +107,17 @@ object Util extends Serializable{
   }
 
   def main(args:Array[String]): Unit ={
-    val time = "2016-07-10 16:30:25"
-    println(stringToTimestamp(time))
-    val a = "195702_046806543400000"
-    val b = "95702_0468079991000"
-    println(a<=b)
-    val array = new Array[DriverAction](2)
 
-    val to = new DriverStatus("23","34",array,"sf","sdf")
-    println(gson.toJson(to))
-    println(gson.toJson(array))
-    println(calculateLineDistance("39.92000","116.46000","45.75000","126.63000"))
-    val dt = timestampToDateTime(("1468943937000").toLong)
-    println(dt.year().getAsString)
-    println(dt.monthOfYear().getAsString)
-    println(dt.dayOfMonth().getAsString)
-    println(dt.hourOfDay().getAsString)
-    println(dt.minuteOfHour().getAsString)
+    // Generate uniformly distributed x
+    val xs = (0 until 100)
+
+    // Generate random y
+    val ys = (0 until 100).map { i => i + 5.0 * Random.nextDouble }
+
+    val p = Plot().withScatter(xs, ys)
+
+    draw(p, "basic-scatter", writer.FileOptions(overwrite=true))
+    // returns  PlotFile(pbugnion:173,basic-scatter)
 
   }
 

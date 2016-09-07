@@ -69,6 +69,11 @@
             <artifactId>scalap</artifactId>
             <version>2.11.8</version>
         </dependency>
+        <dependency>
+            <groupId>co.theasi</groupId>
+            <artifactId>plotly_2.11</artifactId>
+            <version>0.1</version>
+        </dependency>
 
     </dependencies>
 

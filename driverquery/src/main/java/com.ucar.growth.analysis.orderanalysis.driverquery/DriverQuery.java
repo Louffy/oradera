@@ -1,12 +1,8 @@
 package com.ucar.growth.analysis.orderanalysis.driverquery;
 
 import com.ucar.growth.analysis.orderanalysis.driverdata.Beans.*;
-import com.ucar.growth.analysis.orderanalysis.driverdata.util.Util;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math.util.OpenIntToDoubleHashMap;
+import com.ucar.growth.analysis.orderanalysis.driverdata.util.JavaUtil;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -26,7 +22,7 @@ public class DriverQuery {
         return db.getActionList(driverId);
     }
     public static DriverSnapshot getSnapshot(String driverId,String timeStamp){
-        String dateTime = Util.timestampToDateTime(Long.valueOf(timeStamp)).toString();
+        String dateTime = JavaUtil.timestampToDateTime(Long.valueOf(timeStamp)).toString();
         return new DriverSnapshot(driverId, dateTime,
                 constructDriverStatus(driverId,dateTime,getAction(driverId,timeStamp)),
                 getPosition(driverId,timeStamp));
@@ -115,7 +111,7 @@ public class DriverQuery {
         }
         String[] driverIdList = locList.keySet().toArray(new String[locList.size()]);
         DriverSnapshot[] dslist = new DriverSnapshot[driverIdList.length];
-        String dateTime = Util.timestampToDateTime(Long.valueOf(timeStamp)).toString();
+        String dateTime = JavaUtil.timestampToDateTime(Long.valueOf(timeStamp)).toString();
         for (int i = 0;i<driverIdList.length;i++) {
             DriverAction[] da = getAction(driverIdList[i],timeStamp);
             DriverStatus ds = constructDriverStatus(driverIdList[i],timeStamp,da);
@@ -137,14 +133,14 @@ public class DriverQuery {
     public static OrderSnapshot getOrderSnapshot(String orderNo){
         OrderSnapshot orderSnapshot = db.getInvalidOrder(orderNo);
         String timeStamp =String.valueOf(
-                Util.stringToTimestampms(orderSnapshot.getDateTime()));
+                JavaUtil.stringToTimestampms(orderSnapshot.getDateTime()));
         return new OrderSnapshot(orderSnapshot.getOrderId(),orderSnapshot.getDateTime(),getCitySnapshot("1",timeStamp),
                 orderSnapshot.getLat(),orderSnapshot.getLon());
     }
     public static OrderSnapshot getOrderSnapshot2(String orderNo){
         OrderSnapshot orderSnapshot = db.getInvalidOrder2(orderNo);
         String timeStamp =String.valueOf(
-                Util.stringToTimestampms(orderSnapshot.getDateTime()));
+                JavaUtil.stringToTimestampms(orderSnapshot.getDateTime()));
         return new OrderSnapshot(orderSnapshot.getOrderId(),orderSnapshot.getDateTime(),getCitySnapshot("1",timeStamp),
                 orderSnapshot.getLat(),orderSnapshot.getLon());
     }

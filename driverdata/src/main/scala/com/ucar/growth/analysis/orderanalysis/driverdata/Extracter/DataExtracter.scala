@@ -44,12 +44,12 @@ object DataExtracter extends Serializable{
     id.toString + "_" + time.toString
   })
   val udf_key_date = sparkSession.udf.register("udf3", func = (id:Long,time:Long) => {
-    //val dateString = Util.timestampToDate(time.toString)
+    //val dateString = JavaUtil.timestampToDate(time.toString)
     val timeNew:Long = time/(60000)
     id.toString + "_" + timeNew.toString
   })
   val udf_stamp_minute = sparkSession.udf.register("udf3", func = (time:Int) => {
-    //val dateString = Util.timestampToDate(time.toString)
+    //val dateString = JavaUtil.timestampToDate(time.toString)
     val timeNew:Long = time/(60000)
     timeNew
   })

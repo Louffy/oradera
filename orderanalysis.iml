@@ -66,5 +66,12 @@
     <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-xml_2.11:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4" level="project" />
     <orderEntry type="library" name="Maven: org.scala-lang:scalap:2.11.8" level="project" />
+    <orderEntry type="library" name="Maven: co.theasi:plotly_2.11:0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.scalaj:scalaj-http_2.11:2.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.json4s:json4s-native_2.11:3.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.json4s:json4s-core_2.11:3.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.json4s:json4s-ast_2.11:3.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.json4s:json4s-scalap_2.11:3.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.thoughtworks.paranamer:paranamer:2.8" level="project" />
   </component>
 </module>
