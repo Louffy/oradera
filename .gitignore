@@ -10,4 +10,5 @@ gen
 data
 *.json
 *.class
+*.jar
 
