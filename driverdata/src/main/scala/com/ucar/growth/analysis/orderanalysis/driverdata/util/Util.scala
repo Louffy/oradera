@@ -4,7 +4,7 @@ import java.sql.{Date, Timestamp}
 import java.text.SimpleDateFormat
 import java.util.ArrayList
 
-import co.theasi.plotly.{writer, Plot, draw}
+
 import com.google.gson.Gson
 import com.ucar.growth.analysis.orderanalysis.driverdata.Beans.{DriverStatus, DriverAction}
 import com.ucar.growth.analysis.orderanalysis.driverdata.Extracter.{SourceFile, DataExtracter}
@@ -14,7 +14,7 @@ import org.apache.spark.sql.DataFrame
 import org.joda.time.DateTime
 
 import scala.collection.mutable
-import co.theasi.plotly
+
 import util.Random
 
 
@@ -109,15 +109,7 @@ object Util extends Serializable{
   def main(args:Array[String]): Unit ={
 
     // Generate uniformly distributed x
-    val xs = (0 until 100)
 
-    // Generate random y
-    val ys = (0 until 100).map { i => i + 5.0 * Random.nextDouble }
-
-    val p = Plot().withScatter(xs, ys)
-
-    draw(p, "basic-scatter", writer.FileOptions(overwrite=true))
-    // returns  PlotFile(pbugnion:173,basic-scatter)
 
   }
 

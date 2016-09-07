@@ -10,6 +10,8 @@ import scala.math.Ordering;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -212,8 +214,8 @@ public class OrderAnalysis {
         double speedDistance = AnalysisUtil.calculateLineDistance(driverActions.get(2).getTd_lat(),
                 driverActions.get(2).getTd_lon(),driverActions.get(1).getTd_lat(),driverActions.get(1).getTd_lon());
         double speed = 1000*60*60*speedDistance/(historyArriveOrderPeriod);
-        if(speed < 1000){
-            speed = 7200;
+        if(speed < 10000){
+            speed = 10000;
         }
 
         long advanceBoardPeroid = (long)(advanceDistance*3600.0*1000/speed);
@@ -225,6 +227,56 @@ public class OrderAnalysis {
                 historyOrderDistance,historyWaitorderDistance,speed);
 
 
+    }
+    public static AdvanceDriver averageOrderAdvance(TreeMap<Double,AdvanceDriver> advanceDriverTreeMap){
+        String driverId = "AVG";
+        long currentTime = -1;
+
+        long advanceCompletePeroid = 0L;
+
+        double advanceDistance = 0;
+        double historyBoardDistance = 0;
+
+        long historyTakeOrderPeriod = 0L;
+        long historyArriveOrderPeriod = 0L;
+        long historyAllPeriod = 0L;
+
+        double historyOrderDistance = 0;
+        double historyWaitorderDistance = 0;
+
+        double speed = 0;
+
+
+        long advanceBoardPeroid = 0L;
+        Iterator<Double> it = advanceDriverTreeMap.keySet().iterator();
+        while(it.hasNext()){
+            AdvanceDriver advanceDriver = advanceDriverTreeMap.get(it.next());
+            advanceCompletePeroid += advanceDriver.advanceCompletePeriod;
+            advanceDistance += advanceDriver.advanceBoardDistance;
+            historyBoardDistance += advanceDriver.historyBoardDistance;
+            historyTakeOrderPeriod += advanceDriver.historyTakeOrderPeriod;
+            historyArriveOrderPeriod += advanceDriver.historyArriveOrderPeriod;
+            historyAllPeriod += advanceDriver.historyAllPeriod;
+            historyOrderDistance += advanceDriver.historyOrderDistance;
+            historyWaitorderDistance += advanceDriver.historyWaitorderDistance;
+            speed += advanceDriver.currentSpeed;
+            advanceBoardPeroid += advanceDriver.advanceBoardPeriod;
+
+        }
+        int len = advanceDriverTreeMap.size();
+        return new AdvanceDriver(driverId,null,
+                (long)(advanceCompletePeroid*1.0/len),
+                (long)(advanceBoardPeroid*1.0/len),
+                (long)(advanceBoardPeroid*1.0/len+advanceCompletePeroid*1.0/len),
+                (long)(historyTakeOrderPeriod*1.0/len),
+                (long)(historyArriveOrderPeriod*1.0/len),
+                (long)(historyAllPeriod*1.0/len),
+                -1,-1,
+                advanceDistance*1.0/len,
+                historyBoardDistance*1.0/len,
+                historyOrderDistance*1.0/len,
+                historyWaitorderDistance*1.0/len,
+                speed*1.0/len);
     }
     public static HashMap<String,Double> countAdvanceDriver(ArrayList<OrderAdvance> orders,String flag){
         int orderSum1 = orders.size();
@@ -239,6 +291,9 @@ public class OrderAnalysis {
         double historyBoardPeriodAvg = 0;
         double historyWaitOrder = 0;
         double speed = 0;
+        double historyAllPeriodAvg = 0;
+        double advanceWaitPeriodAvg = 0;
+        double historyOrderDistance = 0;
         for(int i = 0;i<orders.size();i++){
             orderSum2++;
             //System.out.println(orders[i]);
@@ -252,7 +307,7 @@ public class OrderAnalysis {
             else if(flag.equals("distance"))
                 advanceDriver = OrderAdvance.advanceDriverDisMap.firstEntry().getValue();
             else if(flag.equals("all")){
-
+                advanceDriver = averageOrderAdvance(OrderAdvance.advanceDriverDisMap);
             }
             //System.out.println(advanceDriver.getHistoryTakeOrderPeriod()/1000);
             //System.out.println((int)advanceDriver.advanceBoardDistance + ":"+(int)advanceDriver.historyBoardDistance);
@@ -268,6 +323,9 @@ public class OrderAnalysis {
             System.out.println(advanceBoardPeriodAvg);
             speed += advanceDriver.currentSpeed;
             historyBoardPeriodAvg += advanceDriver.historyArriveOrderPeriod;
+            historyAllPeriodAvg += advanceDriver.historyAllPeriod;
+            advanceWaitPeriodAvg += advanceDriver.advanceWaitPeriod;
+            historyOrderDistance += advanceDriver.historyOrderDistance;
 
         }
         HashMap<String,Double> result = new HashMap<>();
@@ -275,6 +333,19 @@ public class OrderAnalysis {
         result.put("orderSum2",(double)orderSum2);
         result.put("advanceOrder",(double)advanceOrder);
         result.put("shortAdvanceOrder",(double)shortAdvanceOrder);
+
+        if(orderSum2 == 0)
+            result.put("CanAdvance",(double)-1);
+        else{
+            result.put("CanAdvance",advanceOrder*1.0/orderSum2);
+            System.out.println("======================" + advanceOrder + " " + orderSum2 + " " + advanceOrder * 1.0 / orderSum2);
+        }
+        if(orderSum2 == 0)
+            result.put("ShortAdvance",(double)-1);
+        else {
+            result.put("ShortAdvance", shortAdvanceOrder * 1.0 / orderSum2);
+            System.out.println("======================" + shortAdvanceOrder + " " + orderSum2 + " " + shortAdvanceOrder * 1.0 / orderSum2);
+        }
 
         if(advanceOrder == 0)
             advanceOrder = Integer.MAX_VALUE;
@@ -287,15 +358,11 @@ public class OrderAnalysis {
         result.put("advanceOrderDriver",(double)advanceOrderDriver*1.0/advanceOrder);
         result.put("speed",speed/advanceOrder);
         result.put("historyBoardPeriodAvg",historyBoardPeriodAvg/advanceOrder);
+        result.put("historyAllPeriodAvg",historyAllPeriodAvg/advanceOrder);
+        result.put("advanceWaitPeriodAvg",advanceWaitPeriodAvg/advanceOrder);
+        result.put("historyOrderDistance",historyOrderDistance/advanceOrder);
 
-        if(orderSum2 == 0)
-            result.put("CanAdvance",(double)-1);
-        else
-            result.put("CanAdvance",advanceOrder*1.0/orderSum2);
-        if(orderSum2 == 0)
-            result.put("ShortAdvance",(double)-1);
-        else
-            result.put("ShortAdvance",shortAdvanceOrder*1.0/orderSum2);
+
 
         return result;
 
@@ -335,27 +402,35 @@ public class OrderAnalysis {
         for(int i = 0;i<orderList.size();i++){
             HashMap<String,Double> result1 = countAdvanceDriver(orderList.get(i),"period");
             HashMap<String,Double> result2 = countAdvanceDriver(orderList.get(i),"distance");
-            System.out.println(result1.toString());
-            System.out.println(result2.toString());
+            HashMap<String,Double> result3 = countAdvanceDriver(orderList.get(i),"all");
+            System.out.println("p---"+result1.toString());
+            System.out.println("d---"+result2.toString());
+            System.out.println("a---"+result3.toString());
             all.put(i+"period",result1);
             all.put(i+"distance",result2);
+            all.put(i+"all",result3);
         }
         return all;
     }
     public static HashMap<String,Double[][]> allToArray(HashMap<String ,HashMap<String,Double>> all){
         HashMap<String,Double[][]> result = new HashMap<>();
-
+        DecimalFormat df = new DecimalFormat("0.00");
+        df.setRoundingMode(RoundingMode.HALF_UP);
         for(int i = 0;i<24;i++){
             HashMap<String,Double> r1 = all.get(i+"period");
             HashMap<String,Double> r2 = all.get(i+"distance");
+            HashMap<String,Double> r3 = all.get(i+"all");
             Iterator<String> it = r1.keySet().iterator();
             while(it.hasNext()){
                 String key = it.next();
                 if(!result.containsKey(key)) {
-                    result.put(key, new Double[2][24]);
+                    result.put(key, new Double[3][24]);
                 }
-                result.get(key)[0][i] = (double)Math.round(r1.get(key)*100/100.0);
-                result.get(key)[1][i] = (double)Math.round(r2.get(key)*100/100.0);
+                result.get(key)[0][i] = Double.valueOf(df.format(r1.get(key)));
+                result.get(key)[1][i] = Double.valueOf(df.format(r2.get(key)));
+                System.out.println("qqqqqqqqqqq"+r3.get(key));
+                result.get(key)[2][i] = Double.valueOf(df.format(r3.get(key)));
+                System.out.println("qqqqqqqqqqq"+result.get(key)[2][i]);
             }
 
         }
@@ -410,16 +485,12 @@ public class OrderAnalysis {
         return null;
     }
     public static void gen(){
-        HashMap<String,HashMap<String,Double>> all = countAll(57);
+        HashMap<String,HashMap<String,Double>> all = countAll(17);
         HashMap<String,Double[][]> r = allToArray(all);
         write("result/count",r);
     }
     public static void main(String[] args) {
         gen();
        read("result/count");
-
-
-
-
     }
 }
