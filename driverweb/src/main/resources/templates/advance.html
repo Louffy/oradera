@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+    <script type="text/javascript" th:src="@{/scripts/plotly-latest.min.js}"></script>
+    <script type="text/javascript" th:src="@{/scripts/jquery-3.1.0.min.js}"></script>
+</head>
+<body>
+<div id="myDiv1" style="width: 1280px; height: 1000px;"></div>
+<div id="myDiv2" style="width: 1280px; height: 1000px;"></div>
+<div id="myDiv3" style="width: 1280px; height: 1000px;"></div>
+<div id="myDiv4" style="width: 1280px; height: 1000px;"></div>
+<div id="myDiv5" style="width: 1280px; height: 1000px;"></div>
+<script>
+    function linedata(ndata){
+        var x=new Array(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
+        var data = [];
+        console.log(ndata);
+        for(item in ndata){
+            console.log(item);
+            var key = item;
+            var d = ndata[key];
+            console.log(d);
+            console.log(key);
+            var name = {
+                x:x,
+                y:d,
+                mode: 'lines+markers',
+                name:key
+            }
+            data.push(name)
+        }
+        return data;
+    }
+
+    $.ajax({
+        url: "/advance"
+    }).then(function(data) {
+        console.log(data);
+        var name1 = "advanceDisAvg",name2 = "historyDisAvg",name3 = "advanceCompletePeriodAvg",
+                name4="advanceBoardPeriodAvg",name5 = "historyWaitOrder",name6="historyBoardPeriodAvg",
+                name7="orderSum1",name8="orderSum2",name9="advanceOrder",name10="shortAdvanceOrder",name11="advanceOrderDriver",
+                name12="CanAdvance",name13="ShortAdvance",name14="speed";
+
+        var show1 = {};
+        show1[name1] = data[name1][1];
+        show1[name2] = data[name2][1];
+        console.log(show1);
+
+        Plotly.newPlot('myDiv1', linedata(show1));
+        var show2 = {};
+        show2[name3] = data[name3][1];
+        show2[name4] = data[name4][1];
+        show2[name5] = data[name5][1];
+        show2[name6] = data[name6][1];
+        console.log(show2);
+
+        Plotly.newPlot('myDiv2', linedata(show2));
+        var show3 = {};
+        show3[name7] = data[name7][1];
+        show3[name8] = data[name8][1];
+        show3[name9] = data[name9][1];
+        show3[name10] = data[name10][1];
+        show3[name11] = data[name11][1];
+        console.log(show3);
+
+        Plotly.newPlot('myDiv3', linedata(show3));
+
+        var show4 = {};
+        show4[name12] = data[name12][1];
+        show4[name13] = data[name13][1];
+
+        Plotly.newPlot('myDiv4', linedata(show4));
+
+        var show5 = {};
+        show5[name14] = data[name14][1];
+        Plotly.newPlot('myDiv5', linedata(show5));
+
+    });
+
+</script>
+
+</body>
+</html>
