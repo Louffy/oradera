@@ -181,8 +181,10 @@ public class OrderAnalysis {
                         continue;
                     driverActionArrayList.add(0,driverActions[1]);
                     AdvanceDriver advanceDriver = constructAdvanceDriver(orderContext,driverActionArrayList);
-                    advanceDrivers.put(advanceDriver.advanceCompletePeriod,advanceDriver);
-                    advanceDriversDis.put(advanceDriver.advanceBoardDistance,advanceDriver);
+                    if(advanceDriver != null) {
+                        advanceDrivers.put(advanceDriver.advanceCompletePeriod, advanceDriver);
+                        advanceDriversDis.put(advanceDriver.advanceBoardDistance, advanceDriver);
+                    }
                 }
 
             }
@@ -213,18 +215,23 @@ public class OrderAnalysis {
                 driverActions.get(1).getTd_lon(),driverActions.get(0).getTd_lat(),driverActions.get(0).getTd_lon());
         double speedDistance = AnalysisUtil.calculateLineDistance(driverActions.get(2).getTd_lat(),
                 driverActions.get(2).getTd_lon(),driverActions.get(1).getTd_lat(),driverActions.get(1).getTd_lon());
-        double speed = 1000*60*60*speedDistance/(historyArriveOrderPeriod);
-        if(speed < 10000){
-            speed = 10000;
+        long speed = (long)(1000*60*60*speedDistance/(historyArriveOrderPeriod));
+        if(speed < 7000){
+            speed = 7000;
         }
 
-        long advanceBoardPeroid = (long)(advanceDistance*3600.0*1000/speed);
+        long advanceBoardPeroid = 0;
+        if(speed != 0)
+            advanceBoardPeroid = (long)(advanceDistance*3600.0*1000/speed);
         System.out.println("speed :"+speed+"  "+advanceBoardPeroid);
+        long shortDriver = 0;
+        if(advanceDistance < historyOrderDistance)
+            shortDriver = 1;
         return new AdvanceDriver(driverId,driverActions,advanceCompletePeroid/1000,advanceBoardPeroid/1000,
-                advanceBoardPeroid+advanceCompletePeroid,historyTakeOrderPeriod/1000,
+                (advanceBoardPeroid+advanceCompletePeroid)/1000,historyTakeOrderPeriod/1000,
                 historyArriveOrderPeriod/1000,historyAllPeriod/1000,Long.valueOf(driverActions.get(0).getKey()),
                 Long.valueOf(JavaUtil.stringToTimestamp(orderContext.getTime())),advanceDistance,historyDistance,
-                historyOrderDistance,historyWaitorderDistance,speed);
+                historyOrderDistance,historyWaitorderDistance,speed,shortDriver);
 
 
     }
@@ -244,11 +251,15 @@ public class OrderAnalysis {
         double historyOrderDistance = 0;
         double historyWaitorderDistance = 0;
 
-        double speed = 0;
+        long speed = 0;
+        long shortDriver = 0;
 
 
         long advanceBoardPeroid = 0L;
         Iterator<Double> it = advanceDriverTreeMap.keySet().iterator();
+        long boardPeroid = 0;
+        long speed0  = 0;
+        long len = 0;
         while(it.hasNext()){
             AdvanceDriver advanceDriver = advanceDriverTreeMap.get(it.next());
             advanceCompletePeroid += advanceDriver.advanceCompletePeriod;
@@ -260,23 +271,34 @@ public class OrderAnalysis {
             historyOrderDistance += advanceDriver.historyOrderDistance;
             historyWaitorderDistance += advanceDriver.historyWaitorderDistance;
             speed += advanceDriver.currentSpeed;
+
+            shortDriver += advanceDriver.shortDriver;
+
             advanceBoardPeroid += advanceDriver.advanceBoardPeriod;
 
+
+
+            len++;
+            if(len==5)
+                break;
+
         }
-        int len = advanceDriverTreeMap.size();
+        if(len == 0)
+            len = Integer.MAX_VALUE;
         return new AdvanceDriver(driverId,null,
                 (long)(advanceCompletePeroid*1.0/len),
-                (long)(advanceBoardPeroid*1.0/len),
-                (long)(advanceBoardPeroid*1.0/len+advanceCompletePeroid*1.0/len),
+                (long)(advanceBoardPeroid*1.0/(len)),
+                (long)(advanceBoardPeroid*1.0/(len)+advanceCompletePeroid*1.0/len),
                 (long)(historyTakeOrderPeriod*1.0/len),
-                (long)(historyArriveOrderPeriod*1.0/len),
+                (long)(historyArriveOrderPeriod*1.0/(len)),
                 (long)(historyAllPeriod*1.0/len),
                 -1,-1,
                 advanceDistance*1.0/len,
                 historyBoardDistance*1.0/len,
                 historyOrderDistance*1.0/len,
                 historyWaitorderDistance*1.0/len,
-                speed*1.0/len);
+                (long)(speed*1.0/(len)),
+                shortDriver);
     }
     public static HashMap<String,Double> countAdvanceDriver(ArrayList<OrderAdvance> orders,String flag){
         int orderSum1 = orders.size();
@@ -290,10 +312,14 @@ public class OrderAnalysis {
         double advanceBoardPeriodAvg = 0;
         double historyBoardPeriodAvg = 0;
         double historyWaitOrder = 0;
-        double speed = 0;
+        long speed = 0;
         double historyAllPeriodAvg = 0;
         double advanceWaitPeriodAvg = 0;
         double historyOrderDistance = 0;
+        long shortDriver = 0;
+        long historyAllPeriod = 0;
+        long adp0 = 0;
+        long advanceWaitPeriod = 0;
         for(int i = 0;i<orders.size();i++){
             orderSum2++;
             //System.out.println(orders[i]);
@@ -319,13 +345,18 @@ public class OrderAnalysis {
             historyDisAvg += advanceDriver.historyBoardDistance;
             advanceCompletePeriodAvg += advanceDriver.advanceCompletePeriod;
             advanceBoardPeriodAvg += advanceDriver.advanceBoardPeriod;
+
+            historyBoardPeriodAvg += advanceDriver.historyArriveOrderPeriod;
+
+
             System.out.println(advanceDriver.advanceBoardDistance+" "+advanceDriver.currentSpeed);
             System.out.println(advanceBoardPeriodAvg);
             speed += advanceDriver.currentSpeed;
-            historyBoardPeriodAvg += advanceDriver.historyArriveOrderPeriod;
             historyAllPeriodAvg += advanceDriver.historyAllPeriod;
             advanceWaitPeriodAvg += advanceDriver.advanceWaitPeriod;
             historyOrderDistance += advanceDriver.historyOrderDistance;
+            shortDriver += advanceDriver.shortDriver;
+
 
         }
         HashMap<String,Double> result = new HashMap<>();
@@ -340,10 +371,10 @@ public class OrderAnalysis {
             result.put("CanAdvance",advanceOrder*1.0/orderSum2);
             System.out.println("======================" + advanceOrder + " " + orderSum2 + " " + advanceOrder * 1.0 / orderSum2);
         }
-        if(orderSum2 == 0)
+        if(advanceOrder == 0)
             result.put("ShortAdvance",(double)-1);
         else {
-            result.put("ShortAdvance", shortAdvanceOrder * 1.0 / orderSum2);
+            result.put("ShortAdvance", shortAdvanceOrder * 1.0 / advanceOrder);
             System.out.println("======================" + shortAdvanceOrder + " " + orderSum2 + " " + shortAdvanceOrder * 1.0 / orderSum2);
         }
 
@@ -353,14 +384,16 @@ public class OrderAnalysis {
         result.put("advanceDisAvg",advanceDisAvg/advanceOrder);
         result.put("historyDisAvg",historyDisAvg/advanceOrder);
         result.put("advanceCompletePeriodAvg",advanceCompletePeriodAvg/advanceOrder);
-        result.put("advanceBoardPeriodAvg",advanceBoardPeriodAvg/advanceOrder);
+        result.put("advanceBoardPeriodAvg",advanceBoardPeriodAvg/(advanceOrder));
         result.put("historyWaitOrder",historyWaitOrder/advanceOrder);
         result.put("advanceOrderDriver",(double)advanceOrderDriver*1.0/advanceOrder);
-        result.put("speed",speed/advanceOrder);
+        result.put("speed",(double)speed*1.0/advanceOrder);
         result.put("historyBoardPeriodAvg",historyBoardPeriodAvg/advanceOrder);
         result.put("historyAllPeriodAvg",historyAllPeriodAvg/advanceOrder);
         result.put("advanceWaitPeriodAvg",advanceWaitPeriodAvg/advanceOrder);
         result.put("historyOrderDistance",historyOrderDistance/advanceOrder);
+        result.put("shortDriver",(double)shortDriver*1.0/advanceOrder);
+
 
 
 
@@ -428,7 +461,9 @@ public class OrderAnalysis {
                 }
                 result.get(key)[0][i] = Double.valueOf(df.format(r1.get(key)));
                 result.get(key)[1][i] = Double.valueOf(df.format(r2.get(key)));
+                System.out.println(key);
                 System.out.println("qqqqqqqqqqq"+r3.get(key));
+
                 result.get(key)[2][i] = Double.valueOf(df.format(r3.get(key)));
                 System.out.println("qqqqqqqqqqq"+result.get(key)[2][i]);
             }
@@ -485,12 +520,32 @@ public class OrderAnalysis {
         return null;
     }
     public static void gen(){
-        HashMap<String,HashMap<String,Double>> all = countAll(17);
+        HashMap<String,HashMap<String,Double>> all = countAll(1);
         HashMap<String,Double[][]> r = allToArray(all);
         write("result/count",r);
     }
+    public static void compute(HashMap<String,Double[][]> re){
+        HashMap<String,Double[]> count = new HashMap<>();
+        Iterator<String> it = re.keySet().iterator();
+        while(it.hasNext()){
+            String key = it.next();
+            Double[][] value = re.get(key);
+            Double[] com = new Double[3];
+            for(int j = 0;j<3;j++) {
+                double sum = 0;
+                for (int i = 6; i < 23; i++)
+                    sum += value[j][i];
+                com[j] = sum / 17;
+            }
+            count.put(key,com);
+        }
+        System.out.println(new Gson().toJson(count));
+    }
     public static void main(String[] args) {
-        gen();
-       read("result/count");
+        //gen();
+       HashMap<String,Double[][]> re = read("result/count");
+        compute(re);
+
+
     }
 }

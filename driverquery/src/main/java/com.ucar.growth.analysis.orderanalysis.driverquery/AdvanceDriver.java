@@ -35,9 +35,16 @@ public class AdvanceDriver implements Serializable{
     public double historyOrderDistance;
     public double historyWaitorderDistance;
 
-    public double currentSpeed;
+    public long currentSpeed;
 
-    public AdvanceDriver(String driverId, ArrayList<DriverAction> contextActions, long advanceCompletePeriod, long advanceBoardPeriod, long advanceWaitPeriod, long historyTakeOrderPeriod, long historyArriveOrderPeriod, long historyAllPeriod, long completeTime, long currentTime, double advanceBoardDistance, double historyBoardDistance, double historyOrderDistance, double historyWaitorderDistance, double currentSpeed) {
+    public AdvanceDriver(String driverId, ArrayList<DriverAction> contextActions,
+                         long advanceCompletePeriod, long advanceBoardPeriod,
+                         long advanceWaitPeriod, long historyTakeOrderPeriod,
+                         long historyArriveOrderPeriod, long historyAllPeriod,
+                         long completeTime, long currentTime,
+                         double advanceBoardDistance, double historyBoardDistance,
+                         double historyOrderDistance, double historyWaitorderDistance,
+                         long currentSpeed, long shortDriver) {
         this.driverId = driverId;
         this.contextActions = contextActions;
         this.advanceCompletePeriod = advanceCompletePeriod;
@@ -53,7 +60,12 @@ public class AdvanceDriver implements Serializable{
         this.historyOrderDistance = historyOrderDistance;
         this.historyWaitorderDistance = historyWaitorderDistance;
         this.currentSpeed = currentSpeed;
+        this.shortDriver = shortDriver;
     }
+
+    public long shortDriver;
+
+
 
 
     public long getAdvanceBoardPeriod() {
@@ -172,9 +184,6 @@ public class AdvanceDriver implements Serializable{
         return currentSpeed;
     }
 
-    public void setCurrentSpeed(double currentSpeed) {
-        this.currentSpeed = currentSpeed;
-    }
 
 
 

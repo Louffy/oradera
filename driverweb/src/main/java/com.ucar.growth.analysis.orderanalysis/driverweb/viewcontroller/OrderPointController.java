@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Controller
 public class OrderPointController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @RequestMapping(value = "/{orderNo}/show",method = RequestMethod.GET)
+
     public String get(@PathVariable String orderNo,Model model) {
         model.addAttribute("orderno",orderNo);
         return "point";

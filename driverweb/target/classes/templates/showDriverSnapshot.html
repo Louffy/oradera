@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>JSON 2 HTML</title>
+    <link rel="StyleSheet" type="text/css" th:href="@{/css/style.css}" />
+    <script type="text/javascript" th:src="@{/scripts/json-min.js}"></script>
+    <script type="text/javascript" th:src="@{/scripts/BubbleTooltips.js}"></script>
+
+    <script type="text/javascript" th:src="@{/scripts/parse.js}"></script>
+    <!--[if lt IE 7]>
+    <script defer type="text/javascript" th:src="@{/scripts/pngfix.js}"></script>
+    <![endif]-->
+
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+<div id="show">
+    <h1>Not found any info!</h1>
+</div>
+<script th:inline="javascript">
+    var data = [[${driver}]];
+    var d = parse(data);
+    console.log(d);
+    document.getElementById("show").innerHTML = d;//
+</script>
+</body>
+</html>
