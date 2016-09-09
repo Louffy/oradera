@@ -14,6 +14,10 @@ import com.ucar.growth.analysis.orderanalysis.driverdata.Beans.DriverStatus;
 import com.ucar.growth.analysis.orderanalysis.driverdata.Extracter.DataExtracter;
 import com.ucar.growth.analysis.orderanalysis.driverdata.Extracter.SourceFile;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.RDD;
 import org.joda.time.DateTime;
 
@@ -73,6 +77,12 @@ public class JavaUtil {
             jsonArray[i] = json;
         }
         return jsonArray;
+    }
+    public static void main(String[] args){
+        SparkConf conf = new SparkConf().setAppName("test");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaRDD<String> rddseg = sc.textFile("hdfs://namenode01.bi.10101111.com:8020/ml/mlss/citymap/seg2.csv");
+
     }
 
 

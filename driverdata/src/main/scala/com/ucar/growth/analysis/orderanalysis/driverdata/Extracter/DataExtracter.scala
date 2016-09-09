@@ -59,9 +59,6 @@ object DataExtracter extends Serializable{
     //extractDriver("1")
    //extractDriverQueryDataMonth31("1","2016-07")
     //countFileRows()
-    extractDriverAction("1","2016-07-21")
-    extractDriverAction("1","2016-07-22")
-    extractDriverAction("1","2016-07-23")
     extractDriverAction("1","2016-07-24")
 
     sparkSession.stop()

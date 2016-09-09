@@ -520,7 +520,7 @@ public class OrderAnalysis {
         return null;
     }
     public static void gen(){
-        HashMap<String,HashMap<String,Double>> all = countAll(1);
+        HashMap<String,HashMap<String,Double>> all = countAll(17);
         HashMap<String,Double[][]> r = allToArray(all);
         write("result/count",r);
     }
@@ -533,16 +533,21 @@ public class OrderAnalysis {
             Double[] com = new Double[3];
             for(int j = 0;j<3;j++) {
                 double sum = 0;
+                double sumO = 0;
                 for (int i = 6; i < 23; i++)
                     sum += value[j][i];
                 com[j] = sum / 17;
+                for (int k = 6; k < 23; k++) {
+                    sumO += value[j][k];
+                }
+                System.out.println(key+" "+sumO);
             }
             count.put(key,com);
         }
         System.out.println(new Gson().toJson(count));
     }
     public static void main(String[] args) {
-        //gen();
+        gen();
        HashMap<String,Double[][]> re = read("result/count");
         compute(re);
 
