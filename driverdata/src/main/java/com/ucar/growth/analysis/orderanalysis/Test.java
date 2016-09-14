@@ -5,12 +5,14 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
-/**
- * Created by zfx on 2016/9/9.
- */
+import org.apache.spark.sql.Row;
+import org.datanucleus.query.evaluator.memory.IntegerAggregateExpression;
+
 public class Test {
+
     public static void main(String[] args){
         SparkConf conf = new SparkConf().setAppName("com.ucar.growth.analysis.orderanalysis.Test");
         JavaSparkContext sc = new JavaSparkContext(conf);

@@ -22,18 +22,16 @@ object DataExtracter extends Serializable{
   val toDouble = sparkSession.udf.register("udf",(field:String)=>field.toDouble)
   val udf_driver_id = sparkSession.udf.register("udf1",
     (arg:String)=>{
-      arg match{
+      arg match {
 
         case null => 0
-        case  s => {
-          if(s.length >10)
-            StringUtils.stripStart(StringUtils.stripStart(s.substring(0,10),"1"),"0").toInt
+        case s => {
+          if (s.length > 10)
+            StringUtils.stripStart(StringUtils.stripStart(s.substring(0, 10), "1"), "0").toInt
           else
             0
         }
       }
-
-
     })
   var udf_timestamp = sparkSession.udf.register("udf2", func = (date: String) => {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -59,8 +57,9 @@ object DataExtracter extends Serializable{
     //extractDriver("1")
    //extractDriverQueryDataMonth31("1","2016-07")
     //countFileRows()
-    extractDriverAction("1","2016-07-24")
-
+    //extractDriverAction("1","2016-07-24")
+    //extractDriverQueryDataDay("1","2016-08-01")
+    extractDriverQueryDataDay("1","2016-08-17")
     sparkSession.stop()
   }
 
@@ -205,7 +204,7 @@ object DataExtracter extends Serializable{
 
     val driverPositionId = driverPositiondf.withColumn("driver_id",udf_driver_id(driverPositiondf("rowkey")))
     val driverPositionKey = driverPositionId.withColumn("key",udf_key_date(driverPositionId("driver_id"),driverPositionId("oth6_positionTimeLong")))
-    val driverPositionTmp = driverPositionKey.select("key","driver_id","pd_lat","pd_lon","key")
+    val driverPositionTmp = driverPositionKey.select("key","driver_id","pd_lat","pd_lon")
     val hashSet = new mutable.HashSet[Int]()
     driverBJDf.collect().foreach(r=>{
       hashSet.add(r.getAs[Int](0))

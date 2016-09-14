@@ -61,6 +61,7 @@ public class OrderAnalysis {
         double[][] driverPosSta = new double[driverSnapshots.length][];
 
         HashMap<String,Double> statusCount = new HashMap<>();
+
         for(int i = 0;i<driverSnapshots.length;i++){
             DriverPosition driverPosition = driverSnapshots[i].getDriverPosition();
 
@@ -276,8 +277,6 @@ public class OrderAnalysis {
 
             advanceBoardPeroid += advanceDriver.advanceBoardPeriod;
 
-
-
             len++;
             if(len==5)
                 break;
@@ -394,9 +393,6 @@ public class OrderAnalysis {
         result.put("historyOrderDistance",historyOrderDistance/advanceOrder);
         result.put("shortDriver",(double)shortDriver*1.0/advanceOrder);
 
-
-
-
         return result;
 
     }
@@ -428,8 +424,8 @@ public class OrderAnalysis {
         return orderList;
 
     }
-    public static HashMap<String,HashMap<String,Double>> countAll(int gap){
-        String[] orders = DB.getInstance().getInvalidOrderList();
+    public static HashMap<String,HashMap<String,Double>> countAll(int gap,String day){
+        String[] orders = DB.getInstance().getInvalidOrderList(day);
         HashMap<String,HashMap<String,Double>> all= new HashMap<>();
         ArrayList<ArrayList<OrderAdvance>> orderList = getHourOrder(orders,gap);
         for(int i = 0;i<orderList.size();i++){
@@ -519,10 +515,10 @@ public class OrderAnalysis {
         }
         return null;
     }
-    public static void gen(){
-        HashMap<String,HashMap<String,Double>> all = countAll(17);
+    public static void gen(String filename,String day,int gap){
+        HashMap<String,HashMap<String,Double>> all = countAll(gap,day);
         HashMap<String,Double[][]> r = allToArray(all);
-        write("result/count",r);
+        write(filename,r);
     }
     public static void compute(HashMap<String,Double[][]> re){
         HashMap<String,Double[]> count = new HashMap<>();
@@ -546,11 +542,21 @@ public class OrderAnalysis {
         }
         System.out.println(new Gson().toJson(count));
     }
-    public static void main(String[] args) {
-        gen();
-       HashMap<String,Double[][]> re = read("result/count");
+    public static void genOneDay(String day,int gap){
+        gen("result/count"+day,day,gap);
+        HashMap<String,Double[][]> re = read("result/count"+day);
         compute(re);
-
+    }
+    public static void main(String[] args) {
+        String day1 = "0801";
+        String day2 = "0801S";
+        String day3 = "0817";
+        String day4 = "0817S";
+        int gap = 1;
+        genOneDay(day1,gap);
+        genOneDay(day2,gap);
+        genOneDay(day3,gap);
+        genOneDay(day4,gap);
 
     }
 }

@@ -23,6 +23,6 @@ public class AdvanceCountController {
     @RequestMapping(method = RequestMethod.GET,produces = {MediaType.APPLICATION_JSON_VALUE})
     public HashMap<String,Double[][]> get() {
 
-        return OrderAnalysis.read("result/count");
+        return OrderAnalysis.read("result/count0801");
     }
 }

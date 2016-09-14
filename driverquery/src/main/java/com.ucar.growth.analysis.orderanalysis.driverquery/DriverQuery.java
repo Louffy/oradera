@@ -130,8 +130,8 @@ public class DriverQuery {
         DriverSnapshot[] driverList = getSnapshotList(timeStamp);
         return new OrderSnapshot("0",timeStamp,getCitySnapshot("1",timeStamp),lat,lon);
     }
-    public static OrderSnapshot getOrderSnapshot(String orderNo){
-        OrderSnapshot orderSnapshot = db.getInvalidOrder(orderNo);
+    public static OrderSnapshot getOrderSnapshot(String orderNo,String day){
+        OrderSnapshot orderSnapshot = db.getInvalidOrder(orderNo,day);
         String timeStamp =String.valueOf(
                 JavaUtil.stringToTimestampms(orderSnapshot.getDateTime()));
         return new OrderSnapshot(orderSnapshot.getOrderId(),orderSnapshot.getDateTime(),getCitySnapshot("1",timeStamp),

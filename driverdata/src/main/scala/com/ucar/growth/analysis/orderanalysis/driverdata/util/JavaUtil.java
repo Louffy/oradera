@@ -81,6 +81,7 @@ public class JavaUtil {
     public static void main(String[] args){
         SparkConf conf = new SparkConf().setAppName("test");
         JavaSparkContext sc = new JavaSparkContext(conf);
+
         JavaRDD<String> rddseg = sc.textFile("hdfs://namenode01.bi.10101111.com:8020/ml/mlss/citymap/seg2.csv");
 
     }

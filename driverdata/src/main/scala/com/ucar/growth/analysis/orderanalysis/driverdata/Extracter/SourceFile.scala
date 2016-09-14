@@ -14,7 +14,7 @@ object SourceFile extends Serializable{
   val orderFile = hdfsPrefix + "t_scd_order_all/dt="
   val driverFile = hdfsPrefix + "t_scd_driver"
   val driverActionFile = hdfsBasePrefix + "t_scd_driver_action/"
-  val driverPositionFile = hdfsBasePrefix + "t_scd_driver_position_201607/"
+  val driverPositionFile = hdfsBasePrefix + "t_scd_driver_position_201608/"
 
   val driverQueryFile = savePrefix + "driverQueryFile/"
   val driverOnlineQueryFile = savePrefix + "driverOnlineQueryFile/"
@@ -24,6 +24,7 @@ object SourceFile extends Serializable{
   val driverPositionMinuteQueryFile = savePrefix + "driverPositionMinuteQueryFile/"
 
   val invalidOrderFile = savePrefix + "orderAnalysis/invalidOrder/"
+  val successOrderFile = savePrefix + "orderAnalysis/successOrder/"
   val invalidOrderFileField = savePrefix + "orderAnalysis/invalidOrderField/"
   val driverSnapshot = savePrefix + "driverSnapshot/"
   val citydriverSnapshot = savePrefix + "citydriverSnapshot/"

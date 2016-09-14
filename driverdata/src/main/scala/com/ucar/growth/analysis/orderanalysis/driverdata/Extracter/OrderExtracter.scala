@@ -23,16 +23,35 @@ object OrderExtracter {
 
 
   }
+  def extractOrder(cityId:String,status:String,service_type:String,date:String): Unit ={
+    val orderDf = sparkSession.read.format("orc").load(SourceFile.orderFile+date)
+
+    val specialOrder = orderDf.filter(s"start_city_id = $cityId " +
+      s"and status = $status " +
+      s"and service_type_id = $service_type  "
+      )
+
+    specialOrder.repartition(1).write.mode("overwrite").json(SourceFile.successOrderFile+cityId+"/"+date)
+
+  }
   def extractOrderField(cityId:String,date:String): Unit ={
     val df = sparkSession.read.json(SourceFile.invalidOrderFile+cityId+"/"+date)
     val dfsave = df.select("id","order_no","member_id","create_time",
       "estimate_board_time","estimate_board_lon","estimate_board_lat",
       "estimate_off_lon","estimate_off_lat","estimate_board_position",
-      "estimate_board_position_detail","estimate_distance","estimate_money","estimate_car_type")
+      "estimate_board_position_detail","estimate_distance",
+      "estimate_money","estimate_car_type")
     dfsave.repartition(1).write.mode("overwrite").json(SourceFile.invalidOrderFileField+cityId+"/"+date)
   }
   def main(args: Array[String]) {
+    extractOrderData("1","-1","14","4","27","2016-08-01")
+    extractOrderField("1","2016-08-01")
+    extractOrder("1","17","14","2016-08-01")
+    extractOrderData("1","-1","14","4","27","2016-08-17")
+    extractOrderField("1","2016-08-17")
+    extractOrder("1","17","14","2016-08-17")
     extractOrderData("1","-1","14","4","27","2016-07-20")
+    extractOrderField("1","2016-07-20")
     extractOrderField("1","2016-07-20")
     sparkSession.stop()
   }

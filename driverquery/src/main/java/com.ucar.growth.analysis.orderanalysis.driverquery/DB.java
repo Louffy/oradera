@@ -90,7 +90,7 @@ public class DB {
         }
         jedis.close();
     }
-    public void importInvalidOrder(String folder){
+    public void importInvalidOrder(String folder,String day){
         File listFiles = new File(folder);
         if(listFiles!=null) {
             File[] listF = listFiles.listFiles();
@@ -102,7 +102,7 @@ public class DB {
                         JsonObject jsonObject = new JsonParser().parse(line).getAsJsonObject();
                         if(jsonObject == null)
                             continue;
-                        dbJedis.set("o"+jsonObject.get("order_no").getAsString(),
+                        dbJedis.set("o"+day+jsonObject.get("order_no").getAsString(),
                                 jsonObject.get("create_time").getAsString()+"_"
                         +jsonObject.get("estimate_board_lat").getAsString()+"_"+
                                         jsonObject.get("estimate_board_lon").getAsString());
@@ -216,8 +216,8 @@ public class DB {
         String minutes = String.valueOf(Long.valueOf(timeStamp)/60000);
         return dbJedis.hgetAll(minutes);
     }
-    public OrderSnapshot getInvalidOrder(String orderNo){
-        String s = dbJedis.get("o"+orderNo);
+    public OrderSnapshot getInvalidOrder(String orderNo,String day){
+        String s = dbJedis.get("o"+day+orderNo);
         return new OrderSnapshot(orderNo,s.split("_")[0],s.split("_")[1],s.split("_")[2]);
     }
     public OrderSnapshot getInvalidOrder2(String orderNo){
@@ -227,8 +227,8 @@ public class DB {
         System.out.println(s.split("_")[0]);
         return new OrderSnapshot(orderNo,s.split("_")[0],s.split("_")[1],s.split("_")[2]);
     }
-    public String[] getInvalidOrderList(){
-        Set<String> keys = dbJedis.keys("o2*");
+    public String[] getInvalidOrderList(String day){
+        Set<String> keys = dbJedis.keys("o"+day+"*");
         String[] orders = new String[keys.size()];
         return keys.toArray(orders);
     }
@@ -292,12 +292,14 @@ public class DB {
     public static void main(String[] args){
         DB db = DB.getInstance();
        // System.out.println(args[0]);
-       // db.importDriverPosition(args[0]);
+       //.importDriverPosition("data/position_0817");
         //System.out.printf(args[1]);
-        //db.importDriverAction("data/nac");
-        //db.importInvalidOrder("data/order");
-        Map<String,DriverPosition> d = db.getLocationList("1469011368934");
-        System.out.println(d.size());
+        //.importDriverAction("data/action_0817");
+        db.importInvalidOrder("data/2016-08-17","0817");
+        db.importInvalidOrder("data/orderS/2016-08-01","0801S");
+        db.importInvalidOrder("data/orderS/2016-08-17","0817S");
+        //Map<String,DriverPosition> d = db.getLocationList("1469011368934");
+        //System.out.println(d.size());
 
     }
 

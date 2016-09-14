@@ -11,4 +11,5 @@ data
 *.json
 *.class
 *.jar
+*.tar
 

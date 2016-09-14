@@ -27,7 +27,7 @@ public class OrderContextController {
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public OrderContext get(@PathVariable String orderNo) {
 
-        OrderSnapshot orderSnapshot = DriverQuery.getOrderSnapshot(orderNo);
+        OrderSnapshot orderSnapshot = DriverQuery.getOrderSnapshot(orderNo,"0");
         OrderContext orderContext = OrderAnalysis.initOC(orderSnapshot);
         return orderContext;
     }
