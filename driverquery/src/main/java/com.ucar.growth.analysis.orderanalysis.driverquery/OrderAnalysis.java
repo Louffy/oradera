@@ -405,6 +405,7 @@ public class OrderAnalysis {
         for (int i = 0; i < orders.length; i++) {
             //if(i%57!=0)
             //    continue;
+            System.out.println(i);
             if (i % gap != 0)
                 continue;
 
@@ -552,11 +553,11 @@ public class OrderAnalysis {
         String day2 = "0801S";
         String day3 = "0817";
         String day4 = "0817S";
-        int gap = 1;
-        genOneDay(day1,gap);
-        genOneDay(day2,gap);
+        int gap = 17;
+        //genOneDay(day1,gap);
+        //genOneDay(day2,gap);
         genOneDay(day3,gap);
-        genOneDay(day4,gap);
+        //genOneDay(day4,gap);
 
     }
 }

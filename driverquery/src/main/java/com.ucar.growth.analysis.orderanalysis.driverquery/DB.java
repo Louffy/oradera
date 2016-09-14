@@ -229,6 +229,7 @@ public class DB {
     }
     public String[] getInvalidOrderList(String day){
         Set<String> keys = dbJedis.keys("o"+day+"*");
+        System.out.println(keys.size());
         String[] orders = new String[keys.size()];
         return keys.toArray(orders);
     }
@@ -295,11 +296,12 @@ public class DB {
        //.importDriverPosition("data/position_0817");
         //System.out.printf(args[1]);
         //.importDriverAction("data/action_0817");
-        db.importInvalidOrder("data/2016-08-17","0817");
-        db.importInvalidOrder("data/orderS/2016-08-01","0801S");
-        db.importInvalidOrder("data/orderS/2016-08-17","0817S");
+       // db.importInvalidOrder("data/2016-08-17","0817");
+       // db.importInvalidOrder("data/orderS/2016-08-01","0801S");
+       // db.importInvalidOrder("data/orderS/2016-08-17","0817S");
         //Map<String,DriverPosition> d = db.getLocationList("1469011368934");
         //System.out.println(d.size());
+        db.getInvalidOrderList("0801");
 
     }
 
