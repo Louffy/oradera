@@ -6,8 +6,15 @@ import java.util.TreeMap;
  * Created by zfx on 2016/9/5.
  */
 public class OrderAdvance {
-    public OrderAdvance(String orderNo, String timeStamp, String lat, String lon, TreeMap<Long, AdvanceDriver> advanceDriverMap, TreeMap<Double, AdvanceDriver> advanceDriverDisMap) {
+
+
+    public OrderAdvance(String orderNo, double available, double available5in, double avaiable5out,
+                        boolean canAdv, String timeStamp, String lat, String lon, TreeMap<Long, AdvanceDriver> advanceDriverMap, TreeMap<Double, AdvanceDriver> advanceDriverDisMap) {
         this.orderNo = orderNo;
+        this.available = available;
+        this.available5in = available5in;
+        this.avaiable5out = avaiable5out;
+        this.canAdv = canAdv;
         this.timeStamp = timeStamp;
         this.lat = lat;
         this.lon = lon;
@@ -16,6 +23,10 @@ public class OrderAdvance {
     }
 
     public String orderNo;
+    public double available;
+    public double available5in;
+    public double avaiable5out;
+    public boolean canAdv;
 
     public String getTimeStamp() {
         return timeStamp;

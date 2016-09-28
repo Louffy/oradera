@@ -28,6 +28,7 @@ object Util extends Serializable{
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val datetime = dateFormat.parse(date)
     datetime.getTime()
+
   }
   def stringToTimestampms(date: String): Long = {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")

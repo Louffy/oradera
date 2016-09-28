@@ -57,12 +57,17 @@ public class DriverQuery {
 
         String s1 = a1.getPd_oper_type();
         String s2 = a2.getPd_oper_type();
+        long t1 = Long.valueOf(a1.getKey());
+        long t2 = Long.valueOf(a2.getKey());
+        long timeOrder = Long.valueOf(timeStamp);
 
         if(s2.equals("接单")){
             if(s1.equals("接单")||s1.equals("出发")||s1.equals("到达"))
                 return "服务中-取消";
             else if(s1.equals("开始服务"))
                 return "服务中-开始服务";
+            else if(t2-timeOrder < 120*1000)
+                return "服务中";
             else
                 return "空闲";
         }
@@ -84,7 +89,13 @@ public class DriverQuery {
            //重新登录
            if(s2.equals("出发")||s2.equals("到达")||s2.equals("开始服务")||s2.equals("服务结束")||s2.equals("更新费用"))
                return "服务中-重新登录-"+s1+"-"+s2;
-            else
+            else if(t2-timeOrder < 120*1000)
+               return "服务中";
+           else if(s2.equals("登录"))
+               return "服务中";
+           else if(timeOrder - t1 < 30*1000)
+               return "休息";
+           else
                return "空闲";
         }
         else if(s1.equals("退出")&&s2.equals("登录"))

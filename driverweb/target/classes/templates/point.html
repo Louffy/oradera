@@ -52,12 +52,12 @@
         var completestatus2 = data.completeDriver2;
         var completestatus3 = data.completeDriver3;
         var statuscount = data.statusCount;
-        console.log(completestatus);
+        console.log(data);
         $("#d").append(`<p>Time:${data.time}</p>`);
         $("#d").append(`<p>All Drivers:${driverlist.length}</p>`);
         $("#d").append(`<p>Drivers Status:</p>`);
         for(var key in statuscount){
-            $("#d").append(`<li>    ${key}:${statuscount[key]}</li>`);
+            $("#d").append(`<li>${key}:${statuscount[key]}</li>`);
         }
         $("#d").append(`<h5>StatusMap:</h5>`);
         $("#d").append(`<p>5000:</p>`);
@@ -75,6 +75,7 @@
         $("#d").append(`<p>${completestatus.length}</p>`);
         $("#d").append(`<p>${completestatus2.length}</p>`);
         $("#d").append(`<p>${completestatus3.length}</p>`);
+
 
         var scale = new AMap.Scale({
                     visible: true

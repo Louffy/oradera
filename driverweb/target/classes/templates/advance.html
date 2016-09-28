@@ -11,7 +11,7 @@
 
 <script>
     function linedata(ndata){
-        var x=new Array(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
+        var x=new Array(6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23);
         var data = [];
         console.log(ndata);
         for(item in ndata){
@@ -30,15 +30,15 @@
         }
         return data;
     }
-    function showP(namelist,index,data){
+    function showP(namelist,data){
         var iDiv = document.createElement('div');
-        iDiv.id = namelist[0]+index;
+        iDiv.id = namelist[0];
         iDiv.className = 'block';
         document.getElementsByTagName('body')[0].appendChild(iDiv);
         var show = {}
         for(i in namelist){
             console.log(i);
-            show[namelist[i]] = data[namelist[i]][index];
+            show[namelist[i]] = data[namelist[i]];
         }
         Plotly.newPlot(iDiv.id,linedata(show));
     }
@@ -49,38 +49,39 @@
         console.log(data);
         var name1 = "advanceDisAvg",name2 = "historyDisAvg",name3 = "advanceCompletePeriodAvg",
                 name4="advanceBoardPeriodAvg",name5 = "historyWaitOrder",name6="historyBoardPeriodAvg",
-                name7="orderSum1",name8="orderSum2",name9="advanceOrder",name10="shortAdvanceOrder",
+                name7="orderSum",name8="orderSum2",name9="advanceOrder",name10="shortAdvanceOrder",
                 name11="advanceOrderDriver",
                 name12="CanAdvance",name13="ShortAdvance",name14="speed",name15="shortDriver",
-                name16="historyOrderDistance",name17="historyAllPeriodAvg",name18="advanceWaitPeriodAvg";
+                name16="historyOrderDistance",name17="historyAllPeriodAvg",name18="advanceWaitPeriodAvg",
+                name19="available",name20="allOrderSum",
+                name21="available5in",name22="available5out",
+                name23="invalidOrderSum",name24="invalidCanAdvance";
 
-        showP([name1,name16],1,data);
+        showP([name1,name16],data);
 
 
-        showP([name17,name5,name6],1,data);
+        showP([name17,name5,name6],data);
 
-
-
-        showP([name4,name17,name6],1,data);
-
-        showP([name3,name18,name6],1,data);
-
+        showP([name4],data);
 
 
 
+        showP([name3],data);
+
+        showP([name18,name6],data);
 
 
 
-        showP([name12,name13],1,data);
+        showP([name12,name24],data);
+        showP([name11],data);
 
 
-        showP([name11,name15],1,data);
+        showP([name14],data);
 
+        showP([name23,name7],data);
 
-        showP([name14],2,data);
-
-
-        showP([name7,name9],1,data);
+        showP([name19,name20,name21,name22],data);
+        showP([name7,name9,name19],data);
 
 
     });

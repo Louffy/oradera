@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import scala.math.Ordering;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -57,6 +58,11 @@ public class OrderAnalysis {
         HashMap<String,ArrayList<DriverSnapshot>> distance5Status = new HashMap<>();
         HashMap<String,ArrayList<DriverSnapshot>> distance10Status = new HashMap<>();
         HashMap<String,ArrayList<DriverSnapshot>> distanceOtherStatus = new HashMap<>();
+        Double[] disAvaiable = new Double[2];
+        int dis5in = 0;
+        int dis5out = 0;
+        int dis5inAll = 0;
+        int dis5outAll = 0;
 
         double[][] driverPosSta = new double[driverSnapshots.length][];
 
@@ -112,6 +118,17 @@ public class OrderAnalysis {
                 statusCount.put(status,Double.valueOf(1));
             }
 
+            if(check5in(driverPosition)) {
+                dis5inAll++;
+                if (driverStatus.getAvailiable().equals("1"))
+                    dis5in++;
+            }
+            else{
+                dis5outAll++;
+                if(driverStatus.getAvailiable().equals("1"))
+                    dis5out++;
+            }
+
         }
         filterDriverSnapshot.add(distance5);
         filterDriverSnapshot.add(distance10);
@@ -131,6 +148,19 @@ public class OrderAnalysis {
         }
         orderContext.statusCount = statusCount;
 
+        disAvaiable[0] = dis5in*1.0/(dis5inAll+dis5outAll);
+        disAvaiable[1] = dis5out*1.0/(dis5inAll+dis5outAll);
+        orderContext.disAvaiable = disAvaiable;
+
+    }
+    public static boolean check5in(DriverPosition driverPosition){
+        double lat = Double.valueOf(driverPosition.getPd_lat());
+        double lon = Double.valueOf(driverPosition.getPd_lon());
+        if(lat < Double.valueOf("39.983454") && lat > Double.valueOf("39.829916")
+                && lon < Double.valueOf("116.489782") && lon > Double.valueOf("116.274862"))
+            return true;
+        else
+            return false;
     }
     public static ArrayList<DriverAction> initCompleteStatus(OrderContext orderContext,double dis,long g){
         TreeMap<Double,DriverSnapshot> driverSnapshotTreeMap = orderContext.driverDistanceMap.get(0);
@@ -175,6 +205,7 @@ public class OrderAnalysis {
                         String.valueOf(orderContext.lon),driverActions[1].getTd_lat(),driverActions[1].getTd_lon());
                 long gap = Long.valueOf(driverActions[1].getKey())- JavaUtil.stringToTimestamp(orderContext.time);
                 if(gap<=g&&distance<=dis) {
+                    orderContext.canAdvance = true;
                     String driverId = driverActions[1].getDriver_id();
                     long completeTime = Long.valueOf(driverActions[1].getKey());
                     ArrayList<DriverAction> driverActionArrayList = DB.getInstance().getAdvanceActions(driverId,driverActions[1].getKey());
@@ -300,8 +331,8 @@ public class OrderAnalysis {
                 shortDriver);
     }
     public static HashMap<String,Double> countAdvanceDriver(ArrayList<OrderAdvance> orders,String flag){
-        int orderSum1 = orders.size();
-        int orderSum2 = 0;
+
+        int orderSum = 0;
         int advanceOrder = 0;
         int shortAdvanceOrder = 0;
         int advanceOrderDriver = 0;
@@ -319,24 +350,37 @@ public class OrderAnalysis {
         long historyAllPeriod = 0;
         long adp0 = 0;
         long advanceWaitPeriod = 0;
+        long canAdvance = 0;
+        double avaiable5in = 0;
+        double avaiable5out = 0;
+
+        double available = 0;
+
         for(int i = 0;i<orders.size();i++){
-            orderSum2++;
+            orderSum++;
+
             //System.out.println(orders[i]);
-            OrderAdvance OrderAdvance = orders.get(i);
-            if(OrderAdvance.advanceDriverMap.size() == 0)
+            OrderAdvance orderAdvance = orders.get(i);
+            available += orderAdvance.available;
+            avaiable5in += orderAdvance.available5in;
+            avaiable5out += orderAdvance.avaiable5out;
+            if(orderAdvance.canAdv)
+                canAdvance++;
+            if(orderAdvance.advanceDriverMap.size() == 0)
                 continue;
             advanceOrder++;
+
             AdvanceDriver advanceDriver = null;
             if(flag.equals("period"))
-                advanceDriver = OrderAdvance.advanceDriverMap.firstEntry().getValue();
+                advanceDriver = orderAdvance.advanceDriverMap.firstEntry().getValue();
             else if(flag.equals("distance"))
-                advanceDriver = OrderAdvance.advanceDriverDisMap.firstEntry().getValue();
+                advanceDriver = orderAdvance.advanceDriverDisMap.firstEntry().getValue();
             else if(flag.equals("all")){
-                advanceDriver = averageOrderAdvance(OrderAdvance.advanceDriverDisMap);
+                advanceDriver = averageOrderAdvance(orderAdvance.advanceDriverDisMap);
             }
             //System.out.println(advanceDriver.getHistoryTakeOrderPeriod()/1000);
             //System.out.println((int)advanceDriver.advanceBoardDistance + ":"+(int)advanceDriver.historyBoardDistance);
-            advanceOrderDriver += OrderAdvance.advanceDriverMap.size();
+            advanceOrderDriver += orderAdvance.advanceDriverMap.size();
             historyWaitOrder += advanceDriver.historyTakeOrderPeriod;
             if(advanceDriver.advanceBoardDistance<advanceDriver.historyBoardDistance)
                 shortAdvanceOrder++;
@@ -346,7 +390,6 @@ public class OrderAnalysis {
             advanceBoardPeriodAvg += advanceDriver.advanceBoardPeriod;
 
             historyBoardPeriodAvg += advanceDriver.historyArriveOrderPeriod;
-
 
             System.out.println(advanceDriver.advanceBoardDistance+" "+advanceDriver.currentSpeed);
             System.out.println(advanceBoardPeriodAvg);
@@ -359,22 +402,30 @@ public class OrderAnalysis {
 
         }
         HashMap<String,Double> result = new HashMap<>();
-        result.put("orderSum1",(double)orderSum1);
-        result.put("orderSum2",(double)orderSum2);
+
+        result.put("orderSum",(double)orderSum);
+
         result.put("advanceOrder",(double)advanceOrder);
         result.put("shortAdvanceOrder",(double)shortAdvanceOrder);
 
-        if(orderSum2 == 0)
-            result.put("CanAdvance",(double)-1);
+        if(orderSum == 0) {
+            result.put("CanAdvance", 0D);
+            result.put("available", 0D);
+            result.put("available5in",0D);
+            result.put("available5out",0D);
+        }
         else{
-            result.put("CanAdvance",advanceOrder*1.0/orderSum2);
-            System.out.println("======================" + advanceOrder + " " + orderSum2 + " " + advanceOrder * 1.0 / orderSum2);
+            result.put("CanAdvance",canAdvance*1.0/orderSum);
+            result.put("available",available/orderSum);
+            result.put("available5in",avaiable5in/orderSum);
+            result.put("available5out",avaiable5out/orderSum);
+            System.out.println("======================" + advanceOrder + " " + orderSum + " " + advanceOrder * 1.0 / orderSum);
         }
         if(advanceOrder == 0)
             result.put("ShortAdvance",(double)-1);
         else {
             result.put("ShortAdvance", shortAdvanceOrder * 1.0 / advanceOrder);
-            System.out.println("======================" + shortAdvanceOrder + " " + orderSum2 + " " + shortAdvanceOrder * 1.0 / orderSum2);
+            System.out.println("======================" + shortAdvanceOrder + " " + orderSum + " " + shortAdvanceOrder * 1.0 / orderSum);
         }
 
         if(advanceOrder == 0)
@@ -414,9 +465,27 @@ public class OrderAnalysis {
                 continue;
             System.out.println(orders[i]);
             OrderContext orderContext = OrderAnalysis.initOC(orderSnapshot);
-            OrderAdvance orderAdvance = new OrderAdvance(orderContext.orderNo, orderSnapshot.getDateTime(),
+            double available = 0;
+            if(orderContext.getStatusCount() != null)
+                if(orderContext.getStatusCount().containsKey("空闲"))
+                    available = orderContext.getStatusCount().get("空闲");
+
+            double available5in = 0;
+            double available5out = 0;
+            if(orderContext.disAvaiable != null) {
+                if (orderContext.disAvaiable.length > 0)
+                    available5in = orderContext.disAvaiable[0];
+                if (orderContext.disAvaiable.length > 1)
+                    available5out = orderContext.disAvaiable[1];
+            }
+
+            OrderAdvance orderAdvance = new OrderAdvance(orderContext.orderNo,available,available5in,available5out,
+                    orderContext.canAdvance,orderSnapshot.getDateTime(),
                     orderSnapshot.getLat(), orderSnapshot.getLon(),
                     orderContext.advanceDriverMap, orderContext.advanceDriverDisMap);
+
+            orderAdvance.canAdv = orderContext.canAdvance;
+
             DateTime dateTime = JavaUtil.timestampToDateTime(JavaUtil.stringToTimestampms(orderSnapshot.getDateTime()));
             int hour = dateTime.getHourOfDay();
             System.out.println(hour);
@@ -425,64 +494,68 @@ public class OrderAnalysis {
         return orderList;
 
     }
+
+    /**
+     *
+     * @param gap
+     * @param day
+     * @return
+     */
     public static HashMap<String,HashMap<String,Double>> countAll(int gap,String day){
         String[] orders = DB.getInstance().getInvalidOrderList(day);
         HashMap<String,HashMap<String,Double>> all= new HashMap<>();
         ArrayList<ArrayList<OrderAdvance>> orderList = getHourOrder(orders,gap);
         for(int i = 0;i<orderList.size();i++){
-            HashMap<String,Double> result1 = countAdvanceDriver(orderList.get(i),"period");
+           // HashMap<String,Double> result1 = countAdvanceDriver(orderList.get(i),"period");
             HashMap<String,Double> result2 = countAdvanceDriver(orderList.get(i),"distance");
-            HashMap<String,Double> result3 = countAdvanceDriver(orderList.get(i),"all");
-            System.out.println("p---"+result1.toString());
+           // HashMap<String,Double> result3 = countAdvanceDriver(orderList.get(i),"all");
+
             System.out.println("d---"+result2.toString());
-            System.out.println("a---"+result3.toString());
-            all.put(i+"period",result1);
+
             all.put(i+"distance",result2);
-            all.put(i+"all",result3);
         }
         return all;
     }
-    public static HashMap<String,Double[][]> allToArray(HashMap<String ,HashMap<String,Double>> all){
-        HashMap<String,Double[][]> result = new HashMap<>();
+    public static HashMap<String,Double[]> allToArray(HashMap<String ,HashMap<String,Double>> all){
+        HashMap<String,Double[]> result = new HashMap<>();
         DecimalFormat df = new DecimalFormat("0.00");
         df.setRoundingMode(RoundingMode.HALF_UP);
         for(int i = 0;i<24;i++){
-            HashMap<String,Double> r1 = all.get(i+"period");
+           // HashMap<String,Double> r1 = all.get(i+"period");
             HashMap<String,Double> r2 = all.get(i+"distance");
-            HashMap<String,Double> r3 = all.get(i+"all");
-            Iterator<String> it = r1.keySet().iterator();
+          //  HashMap<String,Double> r3 = all.get(i+"all");
+            Iterator<String> it = r2.keySet().iterator();
             while(it.hasNext()){
                 String key = it.next();
                 if(!result.containsKey(key)) {
-                    result.put(key, new Double[3][24]);
+                    result.put(key, new Double[24]);
                 }
-                result.get(key)[0][i] = Double.valueOf(df.format(r1.get(key)));
-                result.get(key)[1][i] = Double.valueOf(df.format(r2.get(key)));
-                System.out.println(key);
-                System.out.println("qqqqqqqqqqq"+r3.get(key));
 
-                result.get(key)[2][i] = Double.valueOf(df.format(r3.get(key)));
-                System.out.println("qqqqqqqqqqq"+result.get(key)[2][i]);
+              //  result.get(key)[0][i] = Double.valueOf(df.format(r1.get(key)));
+                System.out.println(key);
+                System.out.println("qqqqqq"+r2.get(key));
+                result.get(key)[i] = Double.valueOf(df.format(r2.get(key)));
+
             }
 
         }
         return result;
 
     }
-    public static void write(String file,HashMap<String,Double[][]> r){
+    public static void write(String file,HashMap<String,Double[]> r){
         try {
             File f = new File(file);
             BufferedWriter bw = new BufferedWriter(new FileWriter(f,false));
-            Iterator<Map.Entry<String,Double[][]>> it = r.entrySet().iterator();
+            Iterator<Map.Entry<String,Double[]>> it = r.entrySet().iterator();
             Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
             while (it.hasNext()){
-                Map.Entry<String,Double[][]> entry = it.next();
+                Map.Entry<String,Double[]> entry = it.next();
                 System.out.println(entry.getValue().length);
                 String key = entry.getKey();
-                Double[][] value = entry.getValue();
+                Double[] value = entry.getValue();
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("key",key);
-                JsonElement jsonArray = gson.toJsonTree(value,Double[][].class);
+                JsonElement jsonArray = gson.toJsonTree(value,Double[].class);
                 jsonObject.add("value", jsonArray);
                 String src = gson.toJson(jsonObject);
                 bw.write(src);
@@ -494,11 +567,11 @@ public class OrderAnalysis {
             e.printStackTrace();
         }
     }
-    public static HashMap<String,Double[][]> read(String file){
+    public static HashMap<String,Double[]> read(String file){
         try{
             File f = new File(file);
             BufferedReader br = new BufferedReader(new FileReader(f));
-            HashMap<String,Double[][]> re = new HashMap<>();
+            HashMap<String,Double[]> re = new HashMap<>();
             Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
             JsonParser jp = new JsonParser();
             String line = null;
@@ -507,9 +580,16 @@ public class OrderAnalysis {
                 System.out.println(je.get("key"));
                 System.out.println(je.get("value"));
                 String key = gson.fromJson(je.get("key"),String.class);
-                Double[][] value = gson.fromJson(je.getAsJsonArray("value"),Double[][].class);
-                re.put(key,value);
+                Double[] value = gson.fromJson(je.getAsJsonArray("value"),Double[].class);
+                Double[] temp = Arrays.copyOfRange(value,6,22);
+                re.put(key,temp);
             }
+
+            Double[] data = new Double[16];
+            for (int i = 0; i < data.length; i++) {
+                data[i] = re.get("orderSum")[i]/10000;
+            }
+            re.put("allOrderSum",data);
             return re;
         }catch (IOException e){
             e.printStackTrace();
@@ -518,46 +598,58 @@ public class OrderAnalysis {
     }
     public static void gen(String filename,String day,int gap){
         HashMap<String,HashMap<String,Double>> all = countAll(gap,day);
-        HashMap<String,Double[][]> r = allToArray(all);
+        HashMap<String,Double[]> r = allToArray(all);
         write(filename,r);
     }
-    public static void compute(HashMap<String,Double[][]> re){
-        HashMap<String,Double[]> count = new HashMap<>();
+    public static void compute(HashMap<String,Double[]> re){
+        HashMap<String,Double> count = new HashMap<>();
         Iterator<String> it = re.keySet().iterator();
         while(it.hasNext()){
             String key = it.next();
-            Double[][] value = re.get(key);
-            Double[] com = new Double[3];
-            for(int j = 0;j<3;j++) {
+            Double[] value = re.get(key);
+            double com = 0;
+
                 double sum = 0;
                 double sumO = 0;
-                for (int i = 6; i < 23; i++)
-                    sum += value[j][i];
-                com[j] = sum / 17;
-                for (int k = 6; k < 23; k++) {
-                    sumO += value[j][k];
+                for (int i = 0; i < value.length; i++)
+                    sum += value[i];
+                com = sum / value.length;
+                for (int k = 0; k < value.length; k++) {
+                    sumO += value[k];
                 }
-                System.out.println(key+" "+sumO);
-            }
+                System.out.println(key+" "+com);
+
             count.put(key,com);
         }
         System.out.println(new Gson().toJson(count));
     }
     public static void genOneDay(String day,int gap){
         gen("result/count"+day,day,gap);
-        HashMap<String,Double[][]> re = read("result/count"+day);
+    }
+    public static void genOneDayAverage(String day){
+        HashMap<String,Double[]> re = read("result/count"+day);
         compute(re);
     }
     public static void main(String[] args) {
-        String day1 = "0801";
+        String day1 = "0801I";
         String day2 = "0801S";
-        String day3 = "0817";
+        String day3 = "0817I";
         String day4 = "0817S";
-        int gap = 17;
-        //genOneDay(day1,gap);
-        //genOneDay(day2,gap);
-        genOneDay(day3,gap);
+        String day = "0817";
+        String day0801 = "0801";
+        int gap = 1;
+        genOneDay(day1,gap);
+        genOneDay(day2,gap);
+       //genOneDayAverage(day);
+        genOneDay(day0801,gap);
         //genOneDay(day4,gap);
+       //genOneDay(day,gap);
+        //genOneDay(day0801,gap);
+        //genOneDayAverage(day);
+        //genOneDayAverage(day3);
+        //genOneDayAverage(day1);
+        //genOneDay(day4,gap);
+
 
     }
 }

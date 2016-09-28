@@ -196,16 +196,20 @@ public class DB {
         Iterator<String> it = actionMap.keySet().iterator();
         ArrayList<DriverAction> temp = new ArrayList<>();
         String key = timeStamp;
+        int gap = 0;
         while(actionTree.higherKey(key) != null){
             String time = actionTree.higherKey(key);
             String[] strings = actionMap.get(time).split("_");
-            if(strings[0].equals("接单"))
+            if(temp.size() == 0 && strings[0].equals("接单"))
                 temp.add(new DriverAction(time,driverId,strings[0],strings[1], strings[2], strings[3]));
             if(temp.size() == 1&&strings[0].equals("到达"))
                 temp.add(new DriverAction(time,driverId,strings[0],strings[1], strings[2], strings[3]));
             if(temp.size() == 2)
                 break;
             key = time;
+            gap++;
+            if(gap> 5|| Long.valueOf(key) - Long.valueOf(timeStamp) > 2*60*60*1000)
+                break;
         }
         if(temp.size()==2)
             return temp;
@@ -296,12 +300,17 @@ public class DB {
        //.importDriverPosition("data/position_0817");
         //System.out.printf(args[1]);
         //.importDriverAction("data/action_0817");
-       // db.importInvalidOrder("data/2016-08-17","0817");
-       // db.importInvalidOrder("data/orderS/2016-08-01","0801S");
-       // db.importInvalidOrder("data/orderS/2016-08-17","0817S");
+        db.importInvalidOrder("data/alldata/orderI/2016-08-01","0801I");
+        db.importInvalidOrder("data/alldata/orderI/2016-08-17","0817I");
+        db.importInvalidOrder("data/alldata/orderS/2016-08-01","0801S");
+        db.importInvalidOrder("data/alldata/orderS/2016-08-17","0817S");
+        db.importDriverAction("data/alldata/action/2016-08-01");
+        db.importDriverAction("data/alldata/action/2016-08-17");
+        db.importDriverPosition("data/alldata/position/2016-08-01");
+        db.importDriverPosition("data/alldata/position/2016-08-17");
         //Map<String,DriverPosition> d = db.getLocationList("1469011368934");
         //System.out.println(d.size());
-        db.getInvalidOrderList("0801");
+        //db.getInvalidOrderList("0801");
 
     }
 

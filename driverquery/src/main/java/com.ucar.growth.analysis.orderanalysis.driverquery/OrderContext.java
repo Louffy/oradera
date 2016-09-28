@@ -22,6 +22,7 @@ public class OrderContext implements Serializable{
     public double[][] driverPosSatArray;
     public String orderNo;
     public String time;
+    public boolean canAdvance;
 
     public ArrayList<DriverAction> completeDriver;
     public ArrayList<DriverAction> completeDriver2;
@@ -30,6 +31,7 @@ public class OrderContext implements Serializable{
 
     public TreeMap<Long,AdvanceDriver> advanceDriverMap;
     public TreeMap<Double,AdvanceDriver> advanceDriverDisMap;
+    public Double[] disAvaiable;
 
 
     public ArrayList<HashMap<String, ArrayList<DriverSnapshot>>> getDriverDistanceStatusMap() {

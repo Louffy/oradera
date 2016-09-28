@@ -21,8 +21,8 @@ import java.util.HashMap;
 public class AdvanceCountController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @RequestMapping(method = RequestMethod.GET,produces = {MediaType.APPLICATION_JSON_VALUE})
-    public HashMap<String,Double[][]> get() {
+    public HashMap<String,Double[]> get() {
 
-        return OrderAnalysis.read("result/count0801");
+        return OrderAnalysis.read("result/count0817I");
     }
 }
